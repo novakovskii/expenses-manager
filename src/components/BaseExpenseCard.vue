@@ -96,7 +96,7 @@ export default {
       if (this.expenseName) {
         this.$emit('addExpense', {
           name: this.expenseName,
-          value:  this.expenseValue
+          value:  +this.expenseValue
         });
       }
       this.expenseName = '';

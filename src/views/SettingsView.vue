@@ -104,15 +104,15 @@ export default {
   },
   methods: {
     onOptionChange(event, category, index) {
-      const newValue = event.target.value;
+      const newValue = +event.target.value;
       this.stateStore.changeOption(category, index, newValue);
     },
     onTotalBudgetChange(event) {
-      const newValue = event.target.value;
+      const newValue = +event.target.value;
       this.stateStore.changeTotalBudget(newValue);
     },
-    onPeriodChange(event) {
-      const newValue = event.target.value;
+    onPeriodChange(value) {
+      const newValue = {start: +value.start, end: +value.end};
       this.stateStore.changePeriod(newValue);
     }
   }

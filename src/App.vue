@@ -2,8 +2,18 @@
   <RouterView />
 </template>
 <script>
+import { mapStores } from 'pinia'
+import { useStateStore } from './store/state'
+
 export default {
   name: "App",
+  computed: {
+    ...mapStores(useStateStore),
+
+  },
+  mounted() {
+    this.stateStore.loadSavedData();
+  }
 }
 </script>
 <style lang="scss">

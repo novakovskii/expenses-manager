@@ -18,12 +18,14 @@
           type="text" 
           class="base-settings-option__number  base-settings-option__number--day"
           v-model="innerValue.start"
+          @change="onValueChange(innerValue)"
         >
         <span class="base-settings-option__suffix">-</span>
         <input 
           type="text" 
           class="base-settings-option__number  base-settings-option__number--day"
           v-model="innerValue.end"
+          @change="onValueChange(innerValue)"
         >
       </template>
       <span class="base-settings-option__suffix">{{ suffix }}</span>
