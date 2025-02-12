@@ -1,7 +1,7 @@
 <template>
   <div class="base-settings-option">
     <div class="base-settings-option__icon">
-      <img :src="`/icon-${name}-mono.png`" />
+      <img :src="`/icon-${name}-mono.svg`" />
     </div>
     <div class="base-settings-option__name">{{ displayName }}</div>
     <div class="base-settings-option__value" :class="{'base-settings-option__value--readonly' : readonly}">
