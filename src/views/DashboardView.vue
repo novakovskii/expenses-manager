@@ -45,6 +45,7 @@
         type="payment"
         :limit="mandatoryPayment.limit"
         :payed="mandatoryPayment.payed"
+        @paymentStatusChange="onPaymentStatusChange($event, 'mandatoryPayments', idx)"
       />
     </div>
     <div class="spacer"></div>
