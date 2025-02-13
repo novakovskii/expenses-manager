@@ -96,7 +96,7 @@ export const useStateStore = defineStore('state', {
         payed: false,
       },
       {
-        name: 'mortgage',
+        name: 'mortgage-mandatory-payment',
         displayName: "Mortgage",
         limit: 0,
         payed: false,
