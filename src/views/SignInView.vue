@@ -46,23 +46,6 @@ export default {
     handleAuthClick() {
       this.tokenClient.requestAccessToken({ prompt: '' });
     },
-    
-    // async fetchSheetData() {
-    //   try {
-    //     const response = await fetch(
-    //       'https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/B2:G32',
-    //       {
-    //         headers: {
-    //           Authorization: `Bearer ${this.accessToken}`,
-    //         },
-    //       }
-    //     );
-    //     const data = await response.json();
-    //     this.sheetData = data.values;
-    //   } catch (error) {
-    //     console.error('Ошибка при получении данных из Google Sheets:', error);
-    //   }
-    // },
   },
 };
 </script>
