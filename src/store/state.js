@@ -5,7 +5,6 @@ export const useStateStore = defineStore('state', {
     expenses: [],
     deposits: [],
     mandatoryPayments: [],
-    totalBudget: 100000,
     expensesByDates: {},
     accessToken: null,
     user: {},
@@ -36,10 +35,7 @@ export const useStateStore = defineStore('state', {
       this.removeAccessToken();
     },
 
-    changePaymentStatus(category, index, value) {
-      this[category][index].paid = value;
-      // Telegram.WebApp.CloudStorage.setItem(category, JSON.stringify(this[category]));
-    },
+    
     addExpense(dateKey, categoryName, expense) {
       this.expensesByDates?.[dateKey]?.find(category => category.name === categoryName).expenses.push(expense);
     },

@@ -107,6 +107,8 @@ export default {
       mandatoryPayments: [],
       minDate: null,
       maxDate: null,
+      depositsStartRow: null,
+      mandatoryPaymentsStartRow: null,
     }
   },
   computed: {
@@ -116,10 +118,6 @@ export default {
     this.fetchSheets();
   },
   methods: { 
-    onPaymentStatusChange(event, category, index) {
-      const newValue = event.target.checked;
-      this.stateStore.changePaymentStatus(category, index, newValue);
-    },
     async fetchSheets() {
       try {
         const response = await fetch(
@@ -154,7 +152,7 @@ export default {
     async fetchValues() {
       try {
         const response = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!B2:Y313`,
+          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!A1:Y313`,
           {
             headers: {
               Authorization: `Bearer ${this.stateStore.accessToken}`,
@@ -180,6 +178,9 @@ export default {
         if (value.includes('mandatory payments')) mandatoryPaymentsIndex = index;
         if (value.includes('expenses by days')) expensesByDaysIndex = index;
       })
+
+      this.depositsStartRow = depositsIndex + 4;
+      this.mandatoryPaymentsStartRow = mandatoryPaymentsIndex + 4;
       
       //expenses
       const expensesArray = values.slice(expensesIndex + 2, depositsIndex);
@@ -187,6 +188,7 @@ export default {
       this.expenses = expensesArray.slice(1, expensesArray.length).map(row => {
         let result = {};
         row.forEach((col, index) => {
+          if (!expensesTitles[index]) return;
           if (['limit', 'spent', 'left'].includes(expensesTitles[index])) {
             result[expensesTitles[index]] = +col;
           } else {
@@ -202,6 +204,7 @@ export default {
       this.deposits = depositsArray.slice(1, depositsArray.length).map(row => {
         let result = {};
         row.forEach((col, index) => {
+          if (!depositsTitles[index]) return;
           if (['limit', 'spent'].includes(depositsTitles[index])) {
             result[depositsTitles[index]] = +col;
           } else if (depositsTitles[index] === 'paid') {
@@ -219,6 +222,7 @@ export default {
       this.mandatoryPayments = mandatoryPaymentsArray.slice(1, mandatoryPaymentsArray.length).map(row => {
         let result = {};
         row.forEach((col, index) => {
+          if (!mandatoryPaymentsTitles[index]) return;
           if (['limit', 'spent'].includes(mandatoryPaymentsTitles[index])) {
             result[mandatoryPaymentsTitles[index]] = +col;
           } else if (mandatoryPaymentsTitles[index] === 'paid') {
@@ -229,7 +233,37 @@ export default {
         })
         return result;
       })
+    },
+    onPaymentStatusChange(event, category, index) {
+      const newValue = event.target.checked;
+      this.setPaymentStatus(newValue, category, index);
+    },
+    async setPaymentStatus(value, category, index) {
+      try {
+        const rowIndex = category === 'deposits' ? this.depositsStartRow + index : this.mandatoryPaymentsStartRow + index;
+        const response = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!E${rowIndex}?valueInputOption=USER_ENTERED`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${this.stateStore.accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              range: `${this.sheetTitle}!E${rowIndex}`,
+              majorDimension: 'ROWS',
+              values: [[value ? 'TRUE' : 'FALSE']]
+            })
+          }
+        );
+        const data = await response.json();
+      } catch (error) {
+        console.error('Ошибка при получении данных из Google Sheets:', error);
+      }
     }
+  },
+  getColumnLetterFromIndex(index) {
+    return String.fromCharCode(index + 65);
   }
 }
 </script>
