@@ -9,10 +9,43 @@ export default {
   name: "App",
   computed: {
     ...mapStores(useStateStore),
-
   },
   mounted() {
-    this.stateStore.loadSavedData();
+    const accessToken = localStorage.getItem('access_token');
+    if (accessToken) {
+      this.stateStore.setAccessToken(accessToken);
+      this.checkTokenValidity(accessToken)
+        .then(() => {
+          this.$router.push({name: 'dashboard'})
+          this.stateStore.fetchUser();
+        })
+        .catch(() => {
+          this.$router.push({name: 'signin'})
+        });
+    } else {
+      this.$router.push({name: 'signin'})
+    }
+  },
+  watch: {
+    'stateStore.accessToken'(newValue) {
+      if (!newValue) this.$router.push({name: 'signin'});
+    }
+  },
+  methods: {
+    async checkTokenValidity(accessToken) {
+      try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Токен недействителен');
+        }
+      } catch (error) {
+        throw error;
+      }
+    },
   }
 }
 </script>

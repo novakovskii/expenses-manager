@@ -1,10 +1,10 @@
 <template>
   <div class="base-dashboard-card">
     <div class="base-dashboard-card__icon">
-      <img :src="`/icon-${name}.png`" />
+      <img :src="`/icon-${iconName}.png`" />
     </div>
     <div class="base-dashboard-card__text">
-      <div class="base-dashboard-card__name">{{ displayName }}</div>
+      <div class="base-dashboard-card__name">{{ `${name[0].toUpperCase()}${name.slice(1)}` }}</div>
       <div class="base-dashboard-card__number">
         {{ type === 'expense' ? getFormatedNumber(limit - spent) : getFormatedNumber(limit) }} 
         <span class="base-dashboard-card__suffix">₽</span>
@@ -34,11 +34,11 @@ export default {
   name: "BaseDashboardCard",
   props: {
     name: String,
-    displayName: String,
+    iconName: String,
     type: String,
     limit: Number,
     spent: Number,
-    payed: Boolean,
+    paid: Boolean,
   },
   components: {
     BaseProgressbar,
@@ -47,7 +47,7 @@ export default {
   computed: {
     innerValue: {
       get() {
-        return this.payed;
+        return this.paid;
       }
     }
   },

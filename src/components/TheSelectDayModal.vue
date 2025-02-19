@@ -19,10 +19,16 @@ export default {
   components: {
     BaseModal
   },
+  props: {
+    minDate: String,
+    maxDate: String,
+  },
   mounted() {
     new AirDatepicker('#datepicker-wrapper', {
       locale: localeEn,
       firstDay: 1,
+      minDate: this.minDate,
+      maxDate: this.maxDate,
       onSelect: ({date}) => {
         this.$router.push({name: 'expenses', query: { date }})
       }
@@ -36,6 +42,7 @@ export default {
   align-items: center;
   justify-content: center;
   padding-top: 16px;
+  zoom: 1.2;
 }
 
 .air-datepicker {
@@ -57,7 +64,8 @@ export default {
 }
 
 .-current- {
-  color: var(--color-red) !important;
+  background-color: var(--color-red) !important;
+  color: var(--color-white) !important;
 }
 
 .-selected-.-current- {

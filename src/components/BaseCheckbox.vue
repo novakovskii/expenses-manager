@@ -45,8 +45,8 @@ export default {
     display: none;
 
     &:checked + label {
-      border-color: var(--color-green);
-      background-color: var(--color-green);
+      border-color: var(--color-green-1);
+      background-color: var(--color-green-1);
 
       img {
         display: block;

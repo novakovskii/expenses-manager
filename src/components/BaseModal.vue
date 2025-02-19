@@ -1,6 +1,6 @@
 <template>
   <div class="base-modal">
-    <div class="base-modal__inner">
+    <div class="base-modal__inner" ref="inner">
       <div class="base-modal__header">
         <div class="base-modal__prepend" />
         <div class="title">
@@ -19,11 +19,17 @@
 </template>
 <script>
 import BaseDivider from './BaseDivider.vue';
+import { onClickOutside } from '@vueuse/core';
 
 export default {
   name: "BaseModal",
   components: {
     BaseDivider
+  },
+  mounted() {
+    onClickOutside(this.$refs.inner, () => {
+      this.$emit('close');
+    });
   }
 }
 </script>

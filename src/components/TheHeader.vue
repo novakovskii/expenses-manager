@@ -51,5 +51,11 @@ export default {
       justify-content: center;
       cursor: pointer;
     }
+
+    &__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
   }
 </style>

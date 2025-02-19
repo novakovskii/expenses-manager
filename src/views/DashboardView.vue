@@ -1,53 +1,70 @@
 <template>
-  <TheHeader
-    append-route-name="settings"
-  >
+  <TheHeader>
     <template #title>
-      {{ getPeriodString }} 
+      {{ pageTitle }} 
     </template>
     <template #append>
-      <img src="/icon-settings.svg" alt="settings" />
+      <BaseDropdown>
+        <template #activator>
+          <img class="the-header__avatar" :src="stateStore.user.picture" alt="avatar">
+        </template>
+        <template #menu>
+          <div class="the-dashboard__user-menu">
+            <div class="the-dashboard__user-email title">{{ stateStore.user.email }}</div>
+            <BaseButton 
+              class="the-dashboard__logout-button"
+              @click="stateStore.logout"
+            >Logout</BaseButton>
+          </div>
+        </template>
+      </BaseDropdown>
     </template>
   </TheHeader>
   <div class="the-dashboard">
-    <div class="the-dashboard__subtitle">Expenses</div>
-    <div class="the-dashboard__card-wrapper">
-      <BaseDashboardCard 
-        v-for="(expense, idx) in stateStore.expenses"
-        :key="idx"
-        :name="expense.name"
-        :display-name="expense.displayName"
-        type="expense"
-        :limit="expense.limit"
-        :spent="expensesByCategories[expense.name] || 0"
-      />
-    </div>
-    <div class="the-dashboard__subtitle">Deposits</div>
-    <div class="the-dashboard__card-wrapper">
-      <BaseDashboardCard 
-        v-for="(deposit, idx) in stateStore.deposits"
-        :key="idx"
-        :name="deposit.name"
-        :display-name="deposit.displayName"
-        type="payment"
-        :limit="deposit.limit"
-        :payed="deposit.payed"
-        @paymentStatusChange="onPaymentStatusChange($event, 'deposits', idx)"
-      />
-    </div>
-    <div class="the-dashboard__subtitle">Mandatory payments</div>
-    <div class="the-dashboard__card-wrapper">
-      <BaseDashboardCard 
-        v-for="(mandatoryPayment, idx) in stateStore.mandatoryPayments"
-        :key="idx"
-        :name="mandatoryPayment.name"
-        :display-name="mandatoryPayment.displayName"
-        type="payment"
-        :limit="mandatoryPayment.limit"
-        :payed="mandatoryPayment.payed"
-        @paymentStatusChange="onPaymentStatusChange($event, 'mandatoryPayments', idx)"
-      />
-    </div>
+    <template v-if="expenses.length">
+      <div class="the-dashboard__subtitle">Expenses</div>
+      <div class="the-dashboard__card-wrapper">
+        <BaseDashboardCard 
+          v-for="(expense, idx) in expenses"
+          :key="idx"
+          :name="expense.name"
+          :icon-name="`${expense.name}-expense`"
+          type="expense"
+          :limit="expense.limit"
+          :spent="expense.spent"
+        />
+      </div>
+    </template>
+    <template v-if="deposits.length">
+      <div class="the-dashboard__subtitle">Deposits</div>
+      <div class="the-dashboard__card-wrapper">
+        <BaseDashboardCard 
+          v-for="(deposit, idx) in deposits"
+          :key="idx"
+          :name="deposit.name"
+          :icon-name="`${deposit.name}-deposit`"
+          type="payment"
+          :limit="deposit.limit"
+          :paid="deposit.paid"
+          @paymentStatusChange="onPaymentStatusChange($event, 'deposits', idx)"
+        />
+      </div>
+    </template>
+    <template v-if="mandatoryPayments.length">
+      <div class="the-dashboard__subtitle">Mandatory payments</div>
+      <div class="the-dashboard__card-wrapper">
+        <BaseDashboardCard 
+          v-for="(mandatoryPayment, idx) in mandatoryPayments"
+          :key="idx"
+          :name="mandatoryPayment.name"
+          :icon-name="`${mandatoryPayment.name}-mandatory-payment`"
+          type="payment"
+          :limit="mandatoryPayment.limit"
+          :paid="mandatoryPayment.paid"
+          @paymentStatusChange="onPaymentStatusChange($event, 'mandatoryPayments', idx)"
+        />
+      </div>
+    </template>
     <div class="spacer"></div>
     <BaseButton 
       class="the-dashboard__button"
@@ -56,6 +73,8 @@
   </div>
   <TheSelectDayModal 
     v-if="showSelectDayModal"
+    :min-date="minDate"
+    :max-date="maxDate"
     @close="showSelectDayModal = false"
   />
 </template>
@@ -66,6 +85,7 @@ import BaseButton from '../components/BaseButton.vue';
 import TheSelectDayModal from '../components/TheSelectDayModal.vue';
 import { mapStores } from 'pinia'
 import { useStateStore } from '../store/state'
+import BaseDropdown from '../components/BaseDropdown.vue';
 
 export default {
   name: "DashboardView",
@@ -74,98 +94,141 @@ export default {
     BaseDashboardCard,
     BaseButton,
     TheSelectDayModal,
+    BaseDropdown,
   },
   data () {
     return {
       showSelectDayModal: false,
-      currentPeriodDates: [],
-      expensesByCategories: {},
+      sheetTitle: '',
+      pageTitle: '',
+      pageValues: null,
+      expenses: [],
+      deposits: [],
+      mandatoryPayments: [],
+      minDate: null,
+      maxDate: null,
     }
   },
   computed: {
     ...mapStores(useStateStore),
-    getPeriodString() {
-      const currentDate = new Date();
-      const currentDay = currentDate.getDate();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const {start, end} = this.stateStore.period;
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-      let startYear;
-      let endYear;
-      let startMonthIndex;
-      let endMonthIndex;
-
-      if (currentDay >= start) {
-        startMonthIndex = currentMonth;
-      } else {
-        startMonthIndex = currentMonth > 0 ? currentMonth - 1 : 11;
-      }
-      const startMonth = months[startMonthIndex];
-
-      if (currentDay <= end) {
-        endMonthIndex = currentMonth;
-      } else {
-        endMonthIndex = currentMonth < 11 ? currentMonth + 1 : 0;
-      }
-      const endMonth = months[endMonthIndex];
-
-      if (startMonthIndex === 11 || endMonthIndex === 0) {
-        if (currentMonth === startMonthIndex) {
-          startYear = currentYear
-          endYear = startYear + 1
-        } else {
-          endYear = currentYear
-          startYear = endYear - 1
-        }
-      } else {
-        startYear = currentYear;
-        endYear = currentYear;
-      }
-      
-      let startPeriodDate = new Date(`${startMonthIndex + 1}/${start}/${startYear}`)
-      let endPeriodDate = new Date(`${endMonthIndex + 1}/${end}/${endYear}`)
-      let currentPeriodDates = [];
-
-      while (startPeriodDate <= endPeriodDate) {
-        currentPeriodDates.push(startPeriodDate.toLocaleDateString('en-US'));
-        startPeriodDate = new Date(startPeriodDate.setDate(startPeriodDate.getDate() + 1));
-      }
-      this.currentPeriodDates = currentPeriodDates;
-
-      if (startYear === endYear) {
-        return `${startMonth} ${start} - ${endMonth} ${end}, ${currentYear}`;
-      } else {
-        return `${startMonth} ${start} - ${endMonth} ${end}, ${startYear} - ${endYear}`;
-      }
-    }
   },
-  watch: {
-    currentPeriodDates(newValue) {
-      const expensesByCategories = {}
-      newValue.forEach(date => {
-        const expensesByDate = this.stateStore.expensesByDates?.[date]
-        if (expensesByDate) {
-          expensesByDate.forEach(expense => {
-            let sum = 0;
-            if (expense.expenses.length > 0) {
-              sum += expense.expenses.reduce((acc, current) => acc += Number(current.value), 0);
-            }
-            if (expensesByCategories[expense.name]) {
-              expensesByCategories[expense.name] += sum;
-            } else {
-              expensesByCategories[expense.name] = sum;
-            }
-          })
-        }
-      });
-      this.expensesByCategories = expensesByCategories;
-    }
+  mounted() {
+    this.fetchSheets();
   },
   methods: { 
     onPaymentStatusChange(event, category, index) {
       const newValue = event.target.checked;
       this.stateStore.changePaymentStatus(category, index, newValue);
+    },
+    async fetchSheets() {
+      try {
+        const response = await fetch(
+          'https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0',
+          {
+            headers: {
+              Authorization: `Bearer ${this.stateStore.accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        const currentDate = new Date();
+        data?.sheets.forEach(sheet => {
+          const title = sheet.properties.title;
+          const [startDay, startMonth, startYear] = title.split('-')[0].split('.');
+          const [endDay, endMonth, endYear] = title.split('-')[1].split('.');
+          const startDate = new Date(`${startMonth}.${startDay}.${startYear}`);
+          const endDate = new Date(`${endMonth}.${endDay}.${endYear}`);
+          
+          if (currentDate >= startDate && currentDate <= endDate) {
+            this.minDate = startDate;
+            this.maxDate = endDate;
+            this.sheetTitle = title;
+            this.pageTitle = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+            this.fetchValues();
+          }
+        });
+      } catch (error) {
+        console.error('Ошибка при получении данных из Google Sheets:', error);
+      }
+    },
+    async fetchValues() {
+      try {
+        const response = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!B2:Y313`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.stateStore.accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        // this.pageValues = data?.values;
+        const values = data?.values;
+        this.parseDataFromValues(values);
+      } catch (error) {
+        console.error('Ошибка при получении данных из Google Sheets:', error);
+      }
+    },
+    parseDataFromValues(values) {
+      let expensesIndex = -1;
+      let depositsIndex = -1;
+      let mandatoryPaymentsIndex = -1;
+      let expensesByDaysIndex = -1;
+      values.forEach((value, index) => {
+        if (value.includes('expenses')) expensesIndex = index;
+        if (value.includes('deposits')) depositsIndex = index;
+        if (value.includes('mandatory payments')) mandatoryPaymentsIndex = index;
+        if (value.includes('expenses by days')) expensesByDaysIndex = index;
+      })
+      
+      //expenses
+      const expensesArray = values.slice(expensesIndex + 2, depositsIndex);
+      const expensesTitles = expensesArray[0];
+      this.expenses = expensesArray.slice(1, expensesArray.length).map(row => {
+        let result = {};
+        row.forEach((col, index) => {
+          if (['limit', 'spent', 'left'].includes(expensesTitles[index])) {
+            result[expensesTitles[index]] = +col;
+          } else {
+            result[expensesTitles[index]] = col;
+          }
+        })
+        return result;
+      })
+
+      //deposits
+      const depositsArray = values.slice(depositsIndex + 2, mandatoryPaymentsIndex);
+      const depositsTitles = depositsArray[0];
+      this.deposits = depositsArray.slice(1, depositsArray.length).map(row => {
+        let result = {};
+        row.forEach((col, index) => {
+          if (['limit', 'spent'].includes(depositsTitles[index])) {
+            result[depositsTitles[index]] = +col;
+          } else if (depositsTitles[index] === 'paid') {
+            result[depositsTitles[index]] = col === 'TRUE' ? true : false;
+          } else {
+            result[depositsTitles[index]] = col;
+          }
+        })
+        return result;
+      })
+
+      //mandatory payments
+      const mandatoryPaymentsArray = values.slice(mandatoryPaymentsIndex + 2, expensesByDaysIndex);
+      const mandatoryPaymentsTitles = mandatoryPaymentsArray[0];
+      this.mandatoryPayments = mandatoryPaymentsArray.slice(1, mandatoryPaymentsArray.length).map(row => {
+        let result = {};
+        row.forEach((col, index) => {
+          if (['limit', 'spent'].includes(mandatoryPaymentsTitles[index])) {
+            result[mandatoryPaymentsTitles[index]] = +col;
+          } else if (mandatoryPaymentsTitles[index] === 'paid') {
+            result[mandatoryPaymentsTitles[index]] = col === 'TRUE' ? true : false;
+          } else {
+            result[mandatoryPaymentsTitles[index]] = col;
+          }
+        })
+        return result;
+      })
     }
   }
 }
@@ -192,6 +255,12 @@ export default {
     bottom: 16px;
     width: calc(100% - 32px);
     box-sizing: border-box;
+  }
+
+  &__user-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 }
 </style>

@@ -33,7 +33,7 @@ export default {
   &__progress{
     height: 100%;
     width: 100%;
-    background-color: var(--color-grey-2);
+    background-color: var(--color-green-2);
   }
 }
 </style>
