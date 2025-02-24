@@ -129,7 +129,7 @@ export default {
           }
         );
         const data = await response.json();
-        const currentDate = new Date();
+        const currentDate = new Date().setHours(0,0,0,0);
         data?.sheets.forEach(sheet => {
           const title = sheet.properties.title;
           const [startDay, startMonth, startYear] = title.split('-')[0].split('.');
