@@ -152,7 +152,7 @@ export default {
     async fetchValues() {
       try {
         const response = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!A1:Y313`,
+          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!A1:R378`,
           {
             headers: {
               Authorization: `Bearer ${this.stateStore.accessToken}`,
@@ -171,12 +171,10 @@ export default {
       let expensesIndex = -1;
       let depositsIndex = -1;
       let mandatoryPaymentsIndex = -1;
-      let expensesByDaysIndex = -1;
       values.forEach((value, index) => {
         if (value.includes('expenses')) expensesIndex = index;
         if (value.includes('deposits')) depositsIndex = index;
         if (value.includes('mandatory payments')) mandatoryPaymentsIndex = index;
-        if (value.includes('expenses by days')) expensesByDaysIndex = index;
       })
 
       this.depositsStartRow = depositsIndex + 4;
@@ -217,7 +215,7 @@ export default {
       })
 
       //mandatory payments
-      const mandatoryPaymentsArray = values.slice(mandatoryPaymentsIndex + 2, expensesByDaysIndex);
+      const mandatoryPaymentsArray = values.slice(mandatoryPaymentsIndex + 2, values.length);
       const mandatoryPaymentsTitles = mandatoryPaymentsArray[0];
       this.mandatoryPayments = mandatoryPaymentsArray.slice(1, mandatoryPaymentsArray.length).map(row => {
         let result = {};
