@@ -42,6 +42,7 @@ export default {
     top: 0;
     padding: 16px 0;
     background-color: var(--color-grey-4);
+    z-index: 9999;
 
     &__prepend, &__append {
       width: 48px;

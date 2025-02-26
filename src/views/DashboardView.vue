@@ -21,6 +21,18 @@
     </template>
   </TheHeader>
   <div class="the-dashboard">
+    <div v-if="loaded" class="the-dashboard__date-progress">
+      <div class="the-dashboard__date-progress-text" ref="progress-text">{{ currentDate }}</div>
+      <div class="the-dashboard__date-progress-cursor" ref="progress-cursor"></div>
+      <BaseProgressbar 
+        :used="dateProgress.used"
+        :max="dateProgress.max"
+        background-color="var(--color-white)"
+        bar-color="var(--color-grey-2)"
+        show-empty-bar
+        ref="progressbar"
+      />
+    </div>
     <template v-if="expenses.length">
       <div class="the-dashboard__subtitle">Expenses</div>
       <div class="the-dashboard__card-wrapper">
@@ -86,6 +98,7 @@ import TheSelectDayModal from '../components/TheSelectDayModal.vue';
 import { mapStores } from 'pinia'
 import { useStateStore } from '../store/state'
 import BaseDropdown from '../components/BaseDropdown.vue';
+import BaseProgressbar from '../components/BaseProgressbar.vue';
 
 export default {
   name: "DashboardView",
@@ -95,6 +108,7 @@ export default {
     BaseButton,
     TheSelectDayModal,
     BaseDropdown,
+    BaseProgressbar,
   },
   data () {
     return {
@@ -109,13 +123,34 @@ export default {
       maxDate: null,
       depositsStartRow: null,
       mandatoryPaymentsStartRow: null,
+      currentDate: null,
+      loaded: false,
     }
   },
   computed: {
     ...mapStores(useStateStore),
+    dateProgress() {
+      return {
+        used: new Date(this.currentDate) - this.minDate,
+        max: this.maxDate - this.minDate
+      }
+    }
   },
   mounted() {
     this.fetchSheets();
+  },
+  watch: {
+    dateProgress(newValue) {
+      if (newValue.used !== 0 && newValue.max !== 0) {
+        this.$nextTick(() => {
+          const barWidth = this.$refs.progressbar.$refs.bar.getBoundingClientRect().width;
+          const cursorWidth = this.$refs['progress-cursor'].getBoundingClientRect().width;
+          const textWidth = this.$refs['progress-text'].getBoundingClientRect().width;
+          this.$refs['progress-cursor'].style.left = `calc(16px + ${barWidth}px - ${cursorWidth / 2}px)`;
+          this.$refs['progress-text'].style.left = `calc(16px + ${barWidth}px - ${textWidth / 2}px)`;
+        })
+      }
+    }
   },
   methods: { 
     async fetchSheets() {
@@ -130,6 +165,7 @@ export default {
         );
         const data = await response.json();
         const currentDate = new Date().setHours(0,0,0,0);
+        this.currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         data?.sheets.forEach(sheet => {
           const title = sheet.properties.title;
           const [startDay, startMonth, startYear] = title.split('-')[0].split('.');
@@ -138,6 +174,7 @@ export default {
           const endDate = new Date(`${endMonth}.${endDay}.${endYear}`);
           
           if (currentDate >= startDate && currentDate <= endDate) {
+            this.loaded = true;
             this.minDate = startDate;
             this.maxDate = endDate;
             this.sheetTitle = title;
@@ -152,7 +189,7 @@ export default {
     async fetchValues() {
       try {
         const response = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}!A1:R378`,
+          `https://sheets.googleapis.com/v4/spreadsheets/1YixRyyeL50Z5ZeN3hL3D4qe-W0zU3PRlocO8gWdYcl0/values/${this.sheetTitle}`,
           {
             headers: {
               Authorization: `Bearer ${this.stateStore.accessToken}`,
@@ -268,6 +305,32 @@ export default {
 <style lang="scss">
 .the-dashboard {
   margin-top: 16px;
+
+  &__date-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  &__date-progress-text {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-grey-1);
+    position: sticky;
+    align-self: flex-start;
+  }
+
+  &__date-progress-cursor {
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: 10px 6px 0 6px;
+    border-color: var(--color-grey-2) transparent transparent transparent;
+    transform: rotate(0deg);
+    position: sticky;
+  }
 
   &__subtitle {
     color: var(--color-grey-1);
