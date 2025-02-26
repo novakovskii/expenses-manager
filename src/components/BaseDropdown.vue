@@ -52,7 +52,7 @@ export default {
     padding: 16px;
     border-radius: 16px;
     background-color: var(--color-white);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 8px 0 var(--color-grey-1-30);
     z-index: 9999;
   }
 }
