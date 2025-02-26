@@ -60,11 +60,11 @@ export default {
 }
 
 .-selected-  {
-  background-color: var(--color-red) !important;
+  background-color: var(--color-black) !important;
 }
 
 .-current- {
-  background-color: var(--color-red) !important;
+  background-color: var(--color-black) !important;
   color: var(--color-white) !important;
 }
 

@@ -19,20 +19,22 @@
         </template>
       </BaseDropdown>
     </template>
+    <template #additional>
+      <div v-if="loaded" class="the-dashboard__date-progress">
+        <div class="the-dashboard__date-progress-text" ref="progress-text">{{ currentDate }}</div>
+        <div class="the-dashboard__date-progress-cursor" ref="progress-cursor"></div>
+        <BaseProgressbar 
+          :used="dateProgress.used"
+          :max="dateProgress.max"
+          background-color="var(--color-white)"
+          bar-color="var(--color-grey-2)"
+          show-empty-bar
+          ref="progressbar"
+        />
+      </div>
+    </template>
   </TheHeader>
   <div class="the-dashboard">
-    <div v-if="loaded" class="the-dashboard__date-progress">
-      <div class="the-dashboard__date-progress-text" ref="progress-text">{{ currentDate }}</div>
-      <div class="the-dashboard__date-progress-cursor" ref="progress-cursor"></div>
-      <BaseProgressbar 
-        :used="dateProgress.used"
-        :max="dateProgress.max"
-        background-color="var(--color-white)"
-        bar-color="var(--color-grey-2)"
-        show-empty-bar
-        ref="progressbar"
-      />
-    </div>
     <template v-if="expenses.length">
       <div class="the-dashboard__subtitle">Expenses</div>
       <div class="the-dashboard__card-wrapper">
@@ -310,7 +312,6 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-bottom: 16px;
     position: relative;
   }
 

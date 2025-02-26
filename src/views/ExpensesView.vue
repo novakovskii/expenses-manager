@@ -1,10 +1,5 @@
 <template>
-  <TheHeader
-    prepend-route-name="dashboard"
-  >
-    <template #prepend>
-      <img src="/icon-chevron-left.svg" alt="back" />
-    </template>
+  <TheHeader>
     <template #title>
       {{ getDateString }}
     </template>
@@ -23,10 +18,18 @@
     <div v-else class="the-expenses__empty-state-text">No categories have been added yet</div>
   </div>
   <div class="spacer"></div>
-  <BaseButton 
-    class="the-expenses__button"
-    @click="showSelectCategoryModal = true"
-  >Add category</BaseButton>
+  <div class="the-expenses__buttons-wrapper">
+    <BaseButton
+      class="the-expenses__back-button"
+      @click="$router.push({name: 'dashboard'})"
+    >
+      <img src="/icon-chevron-left.svg" alt="back" />
+    </BaseButton>
+    <BaseButton 
+      class="the-expenses__add-category-button"
+      @click="showSelectCategoryModal = true"
+    >Add category</BaseButton>
+  </div>
   <TheSelectCategoryModal 
     v-if="showSelectCategoryModal"
     :categories="stateStore.expenses"
@@ -104,11 +107,23 @@ export default {
     color: var(--color-grey-1);
   }
 
-  &__button {
+  &__buttons-wrapper {
     position: fixed;
     bottom: 16px;
     width: calc(100% - 32px);
     box-sizing: border-box;
+    display: flex;
+    gap: 8px;
+  }
+
+  &__back-button {
+    aspect-ratio: 1;
+    padding: 0;
+    background-color: var(--color-grey-2);
+  }
+
+  &__add-category-button {
+    flex: 1;
   }
 }
 </style>
