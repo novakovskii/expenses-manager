@@ -1,7 +1,7 @@
 <template>
   <div class="base-dashboard-card">
     <div class="base-dashboard-card__icon">
-      <img :src="`/icon-${iconName}.png`" />
+      <img :src="`/icon-${iconName}.svg`" />
     </div>
     <div class="base-dashboard-card__text">
       <div class="base-dashboard-card__name">{{ `${name[0].toUpperCase()}${name.slice(1)}` }}</div>
